@@ -26,4 +26,10 @@ func (cc *ClienteController) Create(c *gin.Context) {
 		})
 		return
 	}
+	cliente.Status = "aguardando_analise"
+	cliente.Prioridade = "nao_definida"
+
+	if err := cc.DB.Create(&cliente).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao salvar o cliente no banco"})
+	}
 }
