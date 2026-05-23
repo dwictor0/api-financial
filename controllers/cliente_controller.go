@@ -85,6 +85,20 @@ func (cc *ClienteController) Create(c *gin.Context) {
 		})
 		return
 	}
+	_ = `
+	mutation createCard($pipeId: ID!, $title: String!, $fields: [FieldValueInput]) {
+	  createCard(input: {
+	    pipe_id: $pipeId,
+	    title: $title,
+	    fields_attributes: $fields
+	  }) {
+	    card {
+	      id
+	      title
+	    }
+	  }
+	}
+	`
 
 	pipeId := os.Getenv("PIPEFY_PIPE_ID")
 	_ = map[string]interface{}{
