@@ -3,12 +3,34 @@ package controllers
 import (
 	"api-financial/models"
 	"api-financial/services"
+	"bytes"
 	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
+
+type ResponseStatus uint
+
+const (
+	StatusSuccess ResponseStatus = iota
+	StatusValidationFailed
+	StatusInvalidJSON
+	StatusConflictError
+)
+
+func (r ResponseStatus) String() string {
+	return [...]string{"success", "validation_failed", "invalid_json", "conflict_error"}[r]
+}
+
+func (r ResponseStatus) MarshalJSON() ([]byte, error) {
+	buffer := bytes.NewBufferString(`"`)
+	buffer.WriteString(r.String())
+	buffer.WriteString(`"`)
+	return buffer.Bytes(), nil
+}
 
 type ClienteController struct {
 	Service *services.ClienteService
@@ -34,9 +56,23 @@ func (cc *ClienteController) Create(c *gin.Context) {
 	var cliente models.Cliente
 
 	if err := c.ShouldBindJSON(&cliente); err != nil {
+		if errs, ok := err.(validator.ValidationErrors); ok {
+			camposIncompletos := make(map[string]string)
+
+			for _, e := range errs {
+				camposIncompletos[e.Field()] = "Este campo é obrigatório ou está no formato incorreto."
+			}
+
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status":  StatusValidationFailed,
+				"details": camposIncompletos,
+			})
+			return
+		}
+
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "Validação falhou",
-			"details": err.Error(),
+			"status":  StatusInvalidJSON,
+			"details": "O corpo da requisição não é um JSON válido.",
 		})
 		return
 	}
@@ -44,7 +80,7 @@ func (cc *ClienteController) Create(c *gin.Context) {
 	clienteCriado, err := cc.Service.CriarCliente(cliente)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{
-			"status":  "failed",
+			"status":  StatusConflictError,
 			"details": err.Error(),
 		})
 		return
@@ -62,8 +98,8 @@ func (cc *ClienteController) Create(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"message":      "Cliente criado com sucesso e mapeado para o Pipefy!",
-		"cliente":      clienteCriado,
-		"pipefy_split": "Mutation GraphQL estruturada com sucesso na camada de serviço",
+		"status":  StatusSuccess,
+		"message": "Cliente criado com sucesso!",
+		"cliente": clienteCriado,
 	})
 }
