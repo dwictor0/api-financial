@@ -18,3 +18,10 @@ type Cliente struct {
 	UpdatedAt       time.Time      `json:"updated_at"`
 	DeletedAt       gorm.DeletedAt `gorm:"index" json:"-"`
 }
+
+type CriarClienteInput struct {
+	ClienteNome     string  `json:"cliente_nome" binding:"required"`
+	ClienteEmail    string  `json:"cliente_email" binding:"required,email"`
+	TipoSolicitacao string  `json:"tipo_solicitacao" binding:"required"`
+	ValorPatrimonio float64 `json:"valor_patrimonio" binding:"required"`
+}
