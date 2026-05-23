@@ -33,6 +33,7 @@ func (cc *ClienteController) Create(c *gin.Context) {
 
 	if err := cc.DB.Create(&cliente).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao salvar o cliente no banco"})
+		return
 	}
 	pipeId := os.Getenv("PIPEFY_PIPE_ID")
 
