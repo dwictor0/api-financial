@@ -2,20 +2,20 @@ package controllers
 
 import (
 	"api-financial/models"
+	"api-financial/services"
 	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type ClienteController struct {
-	DB *gorm.DB
+	Service *services.ClienteService
 }
 
-func NewClienteController(db *gorm.DB) *ClienteController {
-	return &ClienteController{DB: db}
+func NewClienteController(svc *services.ClienteService) *ClienteController {
+	return &ClienteController{Service: svc}
 }
 
 func (cc *ClienteController) Create(c *gin.Context) {
@@ -23,47 +23,35 @@ func (cc *ClienteController) Create(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&cliente); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "Validacao falhou",
+			"error":   "Validação falhou",
 			"details": err.Error(),
 		})
 		return
 	}
-	cliente.Status = "aguardando_analise"
-	cliente.Prioridade = "nao_definida"
 
-	if err := cc.DB.Create(&cliente).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao salvar o cliente no banco"})
+	clienteCriado, err := cc.Service.CriarCliente(cliente)
+	if err != nil {
+		c.JSON(http.StatusConflict, gin.H{
+			"error":   "Conflito de cadastro",
+			"details": err.Error(),
+		})
 		return
 	}
-	pipeId := os.Getenv("PIPEFY_PIPE_ID")
 
-	_ = `
-	mutation createCard($pipeId: ID!, $title: String!, $fields: [FieldValueInput]) {
-	  createCard(input: {
-	    pipe_id: $pipeId,
-	    title: $title,
-	    fields_attributes: $fields
-	  }) {
-	    card {
-	      id
-	      title
-	    }
-	  }
-	}
-	`
+	pipeId := os.Getenv("PIPEFY_PIPE_ID")
 	_ = map[string]interface{}{
 		"pipeId": pipeId,
-		"title":  cliente.ClienteNome,
+		"title":  clienteCriado.ClienteNome,
 		"fields": []map[string]interface{}{
-			{"field_id": "email_do_cliente", "field_value": []string{cliente.ClienteEmail}},
-			{"field_id": "tipo_de_solicitacao", "field_value": []string{cliente.TipoSolicitacao}},
-			{"field_id": "valor_do_patrimonio", "field_value": []string{fmt.Sprintf("%.2f", cliente.ValorPatrimonio)}},
+			{"field_id": "email_do_cliente", "field_value": []string{clienteCriado.ClienteEmail}},
+			{"field_id": "tipo_de_solicitacao", "field_value": []string{clienteCriado.TipoSolicitacao}},
+			{"field_id": "valor_do_patrimonio", "field_value": []string{fmt.Sprintf("%.2f", clienteCriado.ValorPatrimonio)}},
 		},
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message":      "Cliente criado com sucesso e mapeado para o Pipefy!",
-		"cliente":      cliente,
+		"cliente":      clienteCriado,
 		"pipefy_split": "Mutation GraphQL estruturada com sucesso na camada de serviço",
 	})
 }
