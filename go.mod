@@ -1,6 +1,6 @@
 module api-financial
 
-go 1.26.3
+go 1.26.2
 
 require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
