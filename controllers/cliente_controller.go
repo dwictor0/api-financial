@@ -32,4 +32,19 @@ func (cc *ClienteController) Create(c *gin.Context) {
 	if err := cc.DB.Create(&cliente).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao salvar o cliente no banco"})
 	}
+
+	_ = `
+	mutation createCard($pipeId: ID!, $title: String!, $fields: [FieldValueInput]) {
+	  createCard(input: {
+	    pipe_id: $pipeId,
+	    title: $title,
+	    fields_attributes: $fields
+	  }) {
+	    card {
+	      id
+	      title
+	    }
+	  }
+	}
+	`
 }
