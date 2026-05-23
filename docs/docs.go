@@ -35,7 +35,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Cliente"
+                            "$ref": "#/definitions/models.CriarClienteInput"
                         }
                     }
                 ],
@@ -73,7 +73,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.Cliente": {
+        "models.CriarClienteInput": {
             "type": "object",
             "required": [
                 "cliente_email",
@@ -88,22 +88,7 @@ const docTemplate = `{
                 "cliente_nome": {
                     "type": "string"
                 },
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "prioridade": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
                 "tipo_solicitacao": {
-                    "type": "string"
-                },
-                "updated_at": {
                     "type": "string"
                 },
                 "valor_patrimonio": {

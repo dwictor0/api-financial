@@ -1,22 +1,12 @@
 basePath: /ap1
 definitions:
-  models.Cliente:
+  models.CriarClienteInput:
     properties:
       cliente_email:
         type: string
       cliente_nome:
         type: string
-      created_at:
-        type: string
-      id:
-        type: integer
-      prioridade:
-        type: string
-      status:
-        type: string
       tipo_solicitacao:
-        type: string
-      updated_at:
         type: string
       valor_patrimonio:
         type: number
@@ -45,7 +35,7 @@ paths:
         name: cliente
         required: true
         schema:
-          $ref: '#/definitions/models.Cliente'
+          $ref: '#/definitions/models.CriarClienteInput'
       produces:
       - application/json
       responses:
