@@ -1,1 +1,29 @@
 package controllers
+
+import (
+	"api-financial/models"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type ClienteController struct {
+	DB *gorm.DB
+}
+
+func NewClienteController(db *gorm.DB) *ClienteController {
+	return &ClienteController{DB: db}
+}
+
+func (cc *ClienteController) Create(c *gin.Context) {
+	var cliente models.Cliente
+
+	if err := c.ShouldBindJSON(&cliente); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Validacao falhou",
+			"details": err.Error(),
+		})
+		return
+	}
+}
