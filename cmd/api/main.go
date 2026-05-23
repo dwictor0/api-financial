@@ -2,13 +2,14 @@ package main
 
 import (
 	"api-financial/config"
+	"api-financial/routes"
 	"log"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	config.ConnectDB()
+	db := config.ConnectDB()
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -16,6 +17,7 @@ func main() {
 			"status":  "running",
 		})
 	})
+	routes.SetupClienteRoutes(r, db)
 	log.Println("Servidor HTTP iniciado na porta :8080")
 
 	if err := r.Run(":8080"); err != nil {
