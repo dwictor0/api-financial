@@ -44,7 +44,7 @@ func (cc *ClienteController) Create(c *gin.Context) {
 	clienteCriado, err := cc.Service.CriarCliente(cliente)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{
-			"error":   "Conflito de cadastro",
+			"status":  "failed",
 			"details": err.Error(),
 		})
 		return
