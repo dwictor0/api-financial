@@ -8,6 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @title           API Financial - MVP
+// @version         1.0
+// @description     API de gerenciamento financeiro e integração com CRM.
+// @host            localhost:8080
+// @BasePath        /ap1
 func main() {
 	db := config.ConnectDB()
 	r := gin.Default()
