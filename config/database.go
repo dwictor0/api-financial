@@ -1,6 +1,7 @@
 package config
 
 import (
+	"api-financial/models"
 	"fmt"
 	"log"
 	"os"
@@ -35,7 +36,23 @@ func ConnectDB() *gorm.DB {
 	fmt.Printf("Banco de dados inicializado [%s!\n", dbName)
 
 	DB = database
+
+	RunMigrations()
 	return DB
+}
+
+func RunMigrations() {
+	fmt.Println("Executando AutoMigrate do GORM...")
+
+	err := DB.AutoMigrate(
+		&models.Cliente{},
+		&models.WebhookEvent{},
+	)
+	if err != nil {
+		log.Fatalf("Erro ao executar a migração do banco: %v", err)
+	}
+
+	fmt.Println("Migrações de entidades concluídas com sucesso!")
 }
 
 func getEnv(key, fallback string) string {
