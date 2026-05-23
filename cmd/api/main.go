@@ -18,6 +18,7 @@ func main() {
 		})
 	})
 	routes.SetupClienteRoutes(r, db)
+	routes.SetupSwaggerRoute(r)
 	log.Println("Servidor HTTP iniciado na porta :8080")
 
 	if err := r.Run(":8080"); err != nil {
