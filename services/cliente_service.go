@@ -20,7 +20,7 @@ func (s *ClienteService) CriarCliente(clienteInput models.Cliente) (*models.Clie
 	err := s.DB.Unscoped().Where("cliente_email = ?", clienteInput.ClienteEmail).First(&clienteExistente).Error
 
 	if err == nil {
-		return nil, fmt.Errorf("não foi possível processar a requisição com os dados informados")
+		return nil, fmt.Errorf("Não foi possível processar a requisição com os dados informados")
 	}
 
 	clienteInput.Status = "aguardando_analise"
