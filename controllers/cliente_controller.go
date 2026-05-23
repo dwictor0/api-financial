@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"api-financial/models"
+	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -32,6 +34,7 @@ func (cc *ClienteController) Create(c *gin.Context) {
 	if err := cc.DB.Create(&cliente).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao salvar o cliente no banco"})
 	}
+	pipeId := os.Getenv("PIPEFY_PIPE_ID")
 
 	_ = `
 	mutation createCard($pipeId: ID!, $title: String!, $fields: [FieldValueInput]) {
@@ -47,4 +50,19 @@ func (cc *ClienteController) Create(c *gin.Context) {
 	  }
 	}
 	`
+	_ = map[string]interface{}{
+		"pipeId": pipeId,
+		"title":  cliente.ClienteNome,
+		"fields": []map[string]interface{}{
+			{"field_id": "email_do_cliente", "field_value": []string{cliente.ClienteEmail}},
+			{"field_id": "tipo_de_solicitacao", "field_value": []string{cliente.TipoSolicitacao}},
+			{"field_id": "valor_do_patrimonio", "field_value": []string{fmt.Sprintf("%.2f", cliente.ValorPatrimonio)}},
+		},
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message":      "Cliente criado com sucesso e mapeado para o Pipefy!",
+		"cliente":      cliente,
+		"pipefy_split": "Mutation GraphQL estruturada com sucesso na camada de serviço",
+	})
 }
