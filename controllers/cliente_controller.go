@@ -46,7 +46,7 @@ func NewClienteController(svc *services.ClienteService) *ClienteController {
 // @Tags         Clientes
 // @Accept       json
 // @Produce      json
-// @Param        cliente  body      models.Cliente  true  "Dados do Cliente"
+// @Param        cliente  body      models.CriarClienteInput  true  "Dados do Cliente"
 // @Success      201      {object}  map[string]interface{} "Cliente criado com sucesso"
 // @Failure      400      {object}  map[string]interface{} "Validação de formato falhou"
 // @Failure      409      {object}  map[string]interface{} "Conflito de cadastro (E-mail já existente)"
