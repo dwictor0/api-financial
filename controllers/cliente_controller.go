@@ -18,6 +18,18 @@ func NewClienteController(svc *services.ClienteService) *ClienteController {
 	return &ClienteController{Service: svc}
 }
 
+// Create godoc
+// @Summary      Criar um novo cliente
+// @Description  Recebe os dados de um cliente, executa validações de negócio, evita duplicidade de e-mail e prepara o mapeamento para o Pipefy.
+// @Tags         Clientes
+// @Accept       json
+// @Produce      json
+// @Param        cliente  body      models.Cliente  true  "Dados do Cliente"
+// @Success      201      {object}  map[string]interface{} "Cliente criado com sucesso"
+// @Failure      400      {object}  map[string]interface{} "Validação de formato falhou"
+// @Failure      409      {object}  map[string]interface{} "Conflito de cadastro (E-mail já existente)"
+// @Failure      500      {object}  map[string]interface{} "Erro interno do servidor"
+// @Router       /clientes [post]
 func (cc *ClienteController) Create(c *gin.Context) {
 	var cliente models.Cliente
 
