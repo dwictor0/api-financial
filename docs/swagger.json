@@ -1,0 +1,94 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API de gerenciamento financeiro e integração com CRM.",
+        "title": "API Financial - MVP",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/ap1",
+    "paths": {
+        "/clientes": {
+            "post": {
+                "description": "Recebe os dados de um cliente, executa validações de negócio, evita duplicidade de e-mail e prepara o mapeamento para o Pipefy.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Criar um novo cliente",
+                "parameters": [
+                    {
+                        "description": "Dados do Cliente",
+                        "name": "cliente",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CriarClienteInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Cliente criado com sucesso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Validação de formato falhou",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "409": {
+                        "description": "Conflito de cadastro (E-mail já existente)",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.CriarClienteInput": {
+            "type": "object",
+            "required": [
+                "cliente_email",
+                "cliente_nome",
+                "tipo_solicitacao",
+                "valor_patrimonio"
+            ],
+            "properties": {
+                "cliente_email": {
+                    "type": "string"
+                },
+                "cliente_nome": {
+                    "type": "string"
+                },
+                "tipo_solicitacao": {
+                    "type": "string"
+                },
+                "valor_patrimonio": {
+                    "type": "number"
+                }
+            }
+        }
+    }
+}

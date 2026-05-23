@@ -1,0 +1,65 @@
+basePath: /ap1
+definitions:
+  models.CriarClienteInput:
+    properties:
+      cliente_email:
+        type: string
+      cliente_nome:
+        type: string
+      tipo_solicitacao:
+        type: string
+      valor_patrimonio:
+        type: number
+    required:
+    - cliente_email
+    - cliente_nome
+    - tipo_solicitacao
+    - valor_patrimonio
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API de gerenciamento financeiro e integração com CRM.
+  title: API Financial - MVP
+  version: "1.0"
+paths:
+  /clientes:
+    post:
+      consumes:
+      - application/json
+      description: Recebe os dados de um cliente, executa validações de negócio, evita
+        duplicidade de e-mail e prepara o mapeamento para o Pipefy.
+      parameters:
+      - description: Dados do Cliente
+        in: body
+        name: cliente
+        required: true
+        schema:
+          $ref: '#/definitions/models.CriarClienteInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Cliente criado com sucesso
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Validação de formato falhou
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflito de cadastro (E-mail já existente)
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Erro interno do servidor
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Criar um novo cliente
+      tags:
+      - Clientes
+swagger: "2.0"
