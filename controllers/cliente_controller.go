@@ -53,9 +53,9 @@ func NewClienteController(svc *services.ClienteService) *ClienteController {
 // @Failure      500      {object}  map[string]interface{} "Erro interno do servidor"
 // @Router       /clientes [post]
 func (cc *ClienteController) Create(c *gin.Context) {
-	var cliente models.Cliente
+	var input models.CriarClienteInput
 
-	if err := c.ShouldBindJSON(&cliente); err != nil {
+	if err := c.ShouldBindJSON(&input); err != nil {
 		if errs, ok := err.(validator.ValidationErrors); ok {
 			camposIncompletos := make(map[string]string)
 
@@ -75,6 +75,12 @@ func (cc *ClienteController) Create(c *gin.Context) {
 			"details": "O corpo da requisição não é um JSON válido.",
 		})
 		return
+	}
+	cliente := models.Cliente{
+		ClienteNome:     input.ClienteNome,
+		ClienteEmail:    input.ClienteEmail,
+		TipoSolicitacao: input.TipoSolicitacao,
+		ValorPatrimonio: input.ValorPatrimonio,
 	}
 
 	clienteCriado, err := cc.Service.CriarCliente(cliente)
