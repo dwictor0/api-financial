@@ -18,7 +18,7 @@ func main() {
 	})
 	log.Println("Servidor HTTP iniciado na porta :8080")
 
-	if err := r.Run("8080"); err != nil {
+	if err := r.Run(":8080"); err != nil {
 		log.Fatalf("Falha ao iniciar o servidor: %v", err)
 	}
 }
