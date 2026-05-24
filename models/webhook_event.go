@@ -12,3 +12,10 @@ type WebhookEvent struct {
 	Timestamp    time.Time `json:"timestamp"`
 	CreatedAt    time.Time `json:"created_at"`
 }
+
+type WebhookCardUpdatedInput struct {
+	EventID      string `json:"event_id" binding:"required"`
+	CardID       string `json:"card_id" binding:"required"`
+	ClienteEmail string `json:"cliente_email" binding:"required,email"`
+	Timestamp    string `json:"timestamp" binding:"required"`
+}
