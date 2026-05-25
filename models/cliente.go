@@ -6,6 +6,20 @@ import (
 	"gorm.io/gorm"
 )
 
+type ClienteStatus uint
+
+const (
+	StatusAguardandoAnalise ClienteStatus = iota
+	StatusEmAnalise
+	StatusAprovado
+	StatusRecusado
+	StatusProcessado
+)
+
+func (s ClienteStatus) String() string {
+	return [...]string{"aguardando_analise", "em_analise", "aprovado", "recusado", "processado"}[s]
+}
+
 type Cliente struct {
 	ID              uint           `gorm:"primaryKey" json:"id"`
 	ClienteNome     string         `gorm:"not null" json:"cliente_nome" binding:"required"`

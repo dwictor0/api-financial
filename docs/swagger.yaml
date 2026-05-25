@@ -16,6 +16,22 @@ definitions:
     - tipo_solicitacao
     - valor_patrimonio
     type: object
+  models.WebhookCardUpdatedInput:
+    properties:
+      card_id:
+        type: string
+      cliente_email:
+        type: string
+      event_id:
+        type: string
+      timestamp:
+        type: string
+    required:
+    - card_id
+    - cliente_email
+    - event_id
+    - timestamp
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -62,4 +78,38 @@ paths:
       summary: Criar um novo cliente
       tags:
       - Clientes
+  /webhooks/pipefy/card-updated:
+    post:
+      consumes:
+      - application/json
+      description: Recebe a notificação do Pipefy, valida a idempotência do evento
+        e atualiza a prioridade/status do cliente.
+      parameters:
+      - description: Payload do Webhook
+        in: body
+        name: webhook
+        required: true
+        schema:
+          $ref: '#/definitions/models.WebhookCardUpdatedInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Webhook processado com sucesso
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: JSON inválido ou campos obrigatórios ausentes
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: 'Conflito: Evento duplicado ou erro de negócio'
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Processar Webhook de Atualização do Pipefy
+      tags:
+      - Webhooks
 swagger: "2.0"
