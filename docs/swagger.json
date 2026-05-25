@@ -64,6 +64,55 @@
                     }
                 }
             }
+        },
+        "/webhooks/pipefy/card-updated": {
+            "post": {
+                "description": "Recebe a notificação do Pipefy, valida a idempotência do evento e atualiza a prioridade/status do cliente.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Webhooks"
+                ],
+                "summary": "Processar Webhook de Atualização do Pipefy",
+                "parameters": [
+                    {
+                        "description": "Payload do Webhook",
+                        "name": "webhook",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.WebhookCardUpdatedInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Webhook processado com sucesso",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "JSON inválido ou campos obrigatórios ausentes",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "409": {
+                        "description": "Conflito: Evento duplicado ou erro de negócio",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -87,6 +136,29 @@
                 },
                 "valor_patrimonio": {
                     "type": "number"
+                }
+            }
+        },
+        "models.WebhookCardUpdatedInput": {
+            "type": "object",
+            "required": [
+                "card_id",
+                "cliente_email",
+                "event_id",
+                "timestamp"
+            ],
+            "properties": {
+                "card_id": {
+                    "type": "string"
+                },
+                "cliente_email": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
                 }
             }
         }
