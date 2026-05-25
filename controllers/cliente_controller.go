@@ -5,6 +5,7 @@ import (
 	"api-financial/services"
 	"bytes"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -69,7 +70,11 @@ func (cc *ClienteController) Create(c *gin.Context) {
 			})
 			return
 		}
-
+		slog.Warn("AUDIT: Falha na validação do payload",
+			"acao", "CRIAR_CLIENTE",
+			"status", "erro_validacao",
+			"error", err.Error(),
+		)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  StatusInvalidJSON,
 			"details": "O corpo da requisição não é um JSON válido.",
@@ -85,12 +90,24 @@ func (cc *ClienteController) Create(c *gin.Context) {
 
 	clienteCriado, err := cc.Service.CriarCliente(cliente)
 	if err != nil {
+		slog.Error("AUDIT: Falha crítica ao salvar cliente",
+			"acao", "CRIAR_CLIENTE",
+			"status", "erro_sistema",
+			"error", err.Error(),
+		)
 		c.JSON(http.StatusConflict, gin.H{
 			"status":  StatusConflictError,
 			"details": err.Error(),
 		})
 		return
 	}
+	slog.Info(
+		"AUDIT: Novo cliente processado",
+		"modulo", "clientes",
+		"acao", "CRIAR_CLIENTE",
+		"cliente_nome", clienteCriado.ClienteNome,
+		"status", "sucesso",
+	)
 	_ = `
 	mutation createCard($pipeId: ID!, $title: String!, $fields: [FieldValueInput]) {
 	  createCard(input: {
