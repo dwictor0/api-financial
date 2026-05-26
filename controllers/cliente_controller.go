@@ -90,7 +90,6 @@ func (cc *ClienteController) Create(c *gin.Context) {
 		return
 	}
 
-	// 💡 O Controller agora está super limpo e focado em responder a requisição com sucesso!
 	c.JSON(http.StatusCreated, gin.H{
 		"status":  StatusSuccess,
 		"message": "Cliente criado com sucesso!",
