@@ -16,43 +16,41 @@ jobs:
   continuous-integration:
     name: Build, Lint and Test
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout do Código
-      uses: actions/checkout@v4
+      - name: Checkout do Código
+        uses: actions/checkout@v4
 
-    - name: Configurar Ambiente Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: "1.26"
-        cache: true
+      - name: Configurar Ambiente Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: true
 
-    - name: Baixar Dependências
-      run: go mod download
+      - name: Baixar Dependências
+        run: go mod download
 
-    - name: Verificar Formatação (gofmt)
-      run: gofmt -s -w .
+      - name: Verificar Formatação (gofmt)
+        run: gofmt -s -w .
 
-    - name: Análise de Segurança (SAST com gosec)
-      uses: securego/gosec@master
-      with:
-        args: ./...
+      - name: Análise de Segurança (SAST com gosec)
+        uses: securego/gosec@master
+        with:
+          args: ./...
 
-    - name: Executar Testes Automatizados
-      run: go test ./tests -v
+      - name: Executar Testes Automatizados
+        run: go test ./tests -v
 
   continuous-delivery:
     name: Build & Package Docker Image
     needs: continuous-integration
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
-
     steps:
-    - name: Checkout do Código
-      uses: actions/checkout@v4
+      - name: Checkout do Código
+        uses: actions/checkout@v4
 
-    - name: Simulação de Build Docker de Produção
-      run: |
-        echo "Iniciando build da imagem de produção para a AWS..."
-        echo "Comando real: docker build -t api-financial:latest ."
-        echo "Imagem estruturada e pronta para o AWS ECR com sucesso!"
+      - name: Simulação de Build Docker de Produção
+        run: |
+          echo "Iniciando build da imagem de produção para a AWS..."
+          echo "Comando real: docker build -t api-financial:latest ."
+          echo "Imagem estruturada e pronta para o AWS ECR com sucesso!"
