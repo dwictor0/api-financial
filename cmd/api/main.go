@@ -16,12 +16,6 @@ import (
 func main() {
 	db := config.ConnectDB()
 	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-			"status":  "running",
-		})
-	})
 	routes.SetupClienteRoutes(r, db)
 	routes.SetupSwaggerRoute(r)
 	routes.SetupWebhookRoutes(r, db)
