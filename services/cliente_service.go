@@ -46,18 +46,18 @@ func (s *ClienteService) CriarCliente(clienteInput models.Cliente) (*models.Clie
 		pipeId := os.Getenv("PIPEFY_PIPE_ID")
 
 		if apiURL == "" || token == "" || pipeId == "" {
-			fmt.Println("[Pipefy] Variáveis de ambiente (.env) não configuradas. Pulando envio.")
+			fmt.Println("[pipefy] Variáveis de ambiente (.env) não configuradas. Pulando envio.")
 			return
 		}
 
 		parsedURL, err := url.ParseRequestURI(apiURL)
 		if err != nil {
-			fmt.Println("[Pipefy] Formato da API_URL configurada no .env é inválido:", err)
+			fmt.Println("[pipefy] Formato da API_URL configurada no .env é inválido:", err)
 			return
 		}
 
 		if parsedURL.Scheme != "https" || parsedURL.Host != "api.pipefy.com" {
-			fmt.Printf("[Pipefy] Bloqueio de segurança: Domínio '%s' não autorizado para requisições.\n", parsedURL.Host)
+			fmt.Printf("[pipefy] Bloqueio de segurança: Domínio '%s' não autorizado para requisições.\n", parsedURL.Host)
 			return
 		}
 
@@ -91,13 +91,13 @@ func (s *ClienteService) CriarCliente(clienteInput models.Cliente) (*models.Clie
 
 		jsonData, err := json.Marshal(payload)
 		if err != nil {
-			fmt.Println("[Pipefy] Erro ao serializar JSON da mutation:", err)
+			fmt.Println("[pipefy] Erro ao serializar JSON da mutation:", err)
 			return
 		}
 
 		req, err := http.NewRequest("POST", parsedURL.String(), bytes.NewBuffer(jsonData))
 		if err != nil {
-			fmt.Println("[Pipefy] Erro ao construir request HTTP:", err)
+			fmt.Println("[pipefy] Erro ao construir request HTTP:", err)
 			return
 		}
 
@@ -107,7 +107,7 @@ func (s *ClienteService) CriarCliente(clienteInput models.Cliente) (*models.Clie
 		client := &http.Client{Timeout: 10 * time.Second}
 		resp, err := client.Do(req)
 		if err != nil {
-			fmt.Println("[Pipefy] Falha física na conexão de rede:", err)
+			fmt.Println("[pipefy] Falha física na conexão de rede:", err)
 			return
 		}
 		defer resp.Body.Close()
@@ -115,16 +115,16 @@ func (s *ClienteService) CriarCliente(clienteInput models.Cliente) (*models.Clie
 		var corpoResposta map[string]interface{}
 		if err := json.NewDecoder(resp.Body).Decode(&corpoResposta); err == nil {
 			if errosGraphQL, existe := corpoResposta["errors"]; existe {
-				fmt.Printf("[Pipefy] Erro interno de validação do GraphQL: %v\n", errosGraphQL)
+				fmt.Printf("[pipefy] Erro interno de validação do GraphQL: %v\n", errosGraphQL)
 				return
 			}
-			fmt.Printf("[Pipefy] Resposta bruta recebida: %v\n", corpoResposta)
+			fmt.Printf("[pipefy] Resposta bruta recebida: %v\n", corpoResposta)
 		}
 
 		if resp.StatusCode == http.StatusOK {
-			fmt.Printf("[Pipefy] Card criado com sucesso no Kanban para o e-mail: %s\n", c.ClienteEmail)
+			fmt.Printf("[pipefy] Card criado com sucesso no Kanban para o e-mail: %s\n", c.ClienteEmail)
 		} else {
-			fmt.Printf("[Pipefy] Servidor respondeu com código de erro HTTP: %d\n", resp.StatusCode)
+			fmt.Printf("[pipefy] Servidor respondeu com código de erro HTTP: %d\n", resp.StatusCode)
 		}
 	}(clienteInput)
 
