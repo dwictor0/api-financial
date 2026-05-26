@@ -4,9 +4,7 @@ import (
 	"api-financial/models"
 	"api-financial/services"
 	"bytes"
-	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -42,7 +40,7 @@ func NewClienteController(svc *services.ClienteService) *ClienteController {
 
 // Create godoc
 // @Summary      Criar um novo cliente
-// @Description  Recebe os dados de um cliente, executa validações de negócio, evita duplicidade de e-mail e prepara o mapeamento para o Pipefy.
+// @Description  Recebe os dados de um cliente, executa validações de negócio, evita duplicidade de e-mail e envia para o Pipefy.
 // @Tags         Clientes
 // @Accept       json
 // @Produce      json
@@ -50,7 +48,6 @@ func NewClienteController(svc *services.ClienteService) *ClienteController {
 // @Success      201      {object}  map[string]interface{} "Cliente criado com sucesso"
 // @Failure      400      {object}  map[string]interface{} "Validação de formato falhou"
 // @Failure      409      {object}  map[string]interface{} "Conflito de cadastro (E-mail já existente)"
-// @Failure      500      {object}  map[string]interface{} "Erro interno do servidor"
 // @Router       /clientes [post]
 func (cc *ClienteController) Create(c *gin.Context) {
 	var input models.CriarClienteInput
@@ -76,6 +73,7 @@ func (cc *ClienteController) Create(c *gin.Context) {
 		})
 		return
 	}
+
 	cliente := models.Cliente{
 		ClienteNome:     input.ClienteNome,
 		ClienteEmail:    input.ClienteEmail,
@@ -91,32 +89,8 @@ func (cc *ClienteController) Create(c *gin.Context) {
 		})
 		return
 	}
-	_ = `
-	mutation createCard($pipeId: ID!, $title: String!, $fields: [FieldValueInput]) {
-	  createCard(input: {
-	    pipe_id: $pipeId,
-	    title: $title,
-	    fields_attributes: $fields
-	  }) {
-	    card {
-	      id
-	      title
-	    }
-	  }
-	}
-	`
 
-	pipeId := os.Getenv("PIPEFY_PIPE_ID")
-	_ = map[string]interface{}{
-		"pipeId": pipeId,
-		"title":  clienteCriado.ClienteNome,
-		"fields": []map[string]interface{}{
-			{"field_id": "email_do_cliente", "field_value": []string{clienteCriado.ClienteEmail}},
-			{"field_id": "tipo_de_solicitacao", "field_value": []string{clienteCriado.TipoSolicitacao}},
-			{"field_id": "valor_do_patrimonio", "field_value": []string{fmt.Sprintf("%.2f", clienteCriado.ValorPatrimonio)}},
-		},
-	}
-
+	// 💡 O Controller agora está super limpo e focado em responder a requisição com sucesso!
 	c.JSON(http.StatusCreated, gin.H{
 		"status":  StatusSuccess,
 		"message": "Cliente criado com sucesso!",

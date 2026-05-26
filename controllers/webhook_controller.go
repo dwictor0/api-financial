@@ -3,6 +3,7 @@ package controllers
 import (
 	"api-financial/models"
 	"api-financial/services"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +20,7 @@ func NewWebhookController(svc *services.WebhookService) *WebhookController {
 
 // HandleCardUpdated godoc
 // @Summary      Processar Webhook de Atualização do Pipefy
-// @Description  Recebe a notificação do Pipefy, valida a idempotência do evento e atualiza a prioridade/status do cliente.
+// @Description  Recebe a notificação do Pipefy, valida a idempotência do evento e updates a prioridade/status do cliente.
 // @Tags         Webhooks
 // @Accept       json
 // @Produce      json
@@ -32,6 +33,7 @@ func (wc *WebhookController) HandleCardUpdated(c *gin.Context) {
 	var input models.WebhookCardUpdatedInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
+		fmt.Println("ERRO DE VALIDAÇÃO DO GIN:", err.Error())
 		if errs, ok := err.(validator.ValidationErrors); ok {
 			camposIncompletos := make(map[string]string)
 			for _, e := range errs {
@@ -61,16 +63,16 @@ func (wc *WebhookController) HandleCardUpdated(c *gin.Context) {
 	}
 
 	_ = `
-	mutation updateCardField($cardId: ID!, $fieldId: ID!, $value: [String]!) {
-	  updateCardFieldValue(input: {
-		card_id: $cardId,
-		field_id: $fieldId,
-		value: $value
-	  }) {
-		card { id }
-	  }
-	}
-	`
+    mutation updateCardField($cardId: ID!, $fieldId: ID!, $value: [String]!) {
+      updateCardFieldValue(input: {
+        card_id: $cardId,
+        field_id: $fieldId,
+        value: $value
+      }) {
+        card { id }
+      }
+    }
+    `
 	_ = map[string]interface{}{
 		"cardId": input.CardID,
 		"updates": []map[string]interface{}{
