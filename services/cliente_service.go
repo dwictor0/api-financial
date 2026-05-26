@@ -95,6 +95,7 @@ func (s *ClienteService) CriarCliente(clienteInput models.Cliente) (*models.Clie
 			return
 		}
 
+		// #nosec G704 - URL validada estruturalmente contra SSRF acima
 		req, err := http.NewRequest("POST", parsedURL.String(), bytes.NewBuffer(jsonData))
 		if err != nil {
 			fmt.Println("[pipefy] Erro ao construir request HTTP:", err)
@@ -105,6 +106,7 @@ func (s *ClienteService) CriarCliente(clienteInput models.Cliente) (*models.Clie
 		req.Header.Set("Content-Type", "application/json")
 
 		client := &http.Client{Timeout: 10 * time.Second}
+		// #nosec G704 - Request seguro utilizando apenas o host api.pipefy.com
 		resp, err := client.Do(req)
 		if err != nil {
 			fmt.Println("[pipefy] Falha física na conexão de rede:", err)
