@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -49,6 +50,17 @@ func (s *ClienteService) CriarCliente(clienteInput models.Cliente) (*models.Clie
 			return
 		}
 
+		parsedURL, err := url.ParseRequestURI(apiURL)
+		if err != nil {
+			fmt.Println("[Pipefy] Formato da API_URL configurada no .env é inválido:", err)
+			return
+		}
+
+		if parsedURL.Scheme != "https" || parsedURL.Host != "api.pipefy.com" {
+			fmt.Printf("[Pipefy] Bloqueio de segurança: Domínio '%s' não autorizado para requisições.\n", parsedURL.Host)
+			return
+		}
+
 		mutation := `
         mutation createCard($pipeId: ID!, $title: String!, $fieldValues: [FieldValueInput]!) {
           createCard(input: {
@@ -83,7 +95,7 @@ func (s *ClienteService) CriarCliente(clienteInput models.Cliente) (*models.Clie
 			return
 		}
 
-		req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(jsonData))
+		req, err := http.NewRequest("POST", parsedURL.String(), bytes.NewBuffer(jsonData))
 		if err != nil {
 			fmt.Println("[Pipefy] Erro ao construir request HTTP:", err)
 			return
