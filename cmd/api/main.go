@@ -4,6 +4,7 @@ import (
 	"api-financial/config"
 	"api-financial/routes"
 	"log"
+	"log/slog"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,6 +15,7 @@ import (
 // @host            localhost:8080
 // @BasePath        /ap1
 func main() {
+	config.InitLogger()
 	db := config.ConnectDB()
 	r := gin.Default()
 	routes.SetupClienteRoutes(r, db)
@@ -22,6 +24,6 @@ func main() {
 	log.Println("Servidor HTTP iniciado na porta :8080")
 
 	if err := r.Run(":8080"); err != nil {
-		log.Fatalf("Falha ao iniciar o servidor: %v", err)
+		slog.Error("Falha ao iniciar o servidor", "error", err.Error())
 	}
 }

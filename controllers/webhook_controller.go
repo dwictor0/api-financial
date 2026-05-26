@@ -4,6 +4,7 @@ import (
 	"api-financial/models"
 	"api-financial/services"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -39,6 +40,11 @@ func (wc *WebhookController) HandleCardUpdated(c *gin.Context) {
 			for _, e := range errs {
 				camposIncompletos[e.Field()] = "Este campo é obrigatório ou está no formato incorreto."
 			}
+			slog.Warn("AUDIT: Campos obrigatorios ausentes no webhook",
+				"acao", "PIPEFY_WEBHOOK_RECEIVE",
+				"status", "erro_validacao",
+				"detalhes", camposIncompletos,
+			)
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status":  StatusValidationFailed,
 				"details": camposIncompletos,
@@ -46,6 +52,11 @@ func (wc *WebhookController) HandleCardUpdated(c *gin.Context) {
 			return
 		}
 
+		slog.Warn("AUDIT: Payload do webhook nao e um JSON valido",
+			"acao", "PIPEFY_WEBHOOK_RECEIVE",
+			"status", "erro_json_invalido",
+			"error", err.Error(),
+		)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  StatusInvalidJSON,
 			"details": "O corpo da requisição não é um JSON válido.",
@@ -55,6 +66,12 @@ func (wc *WebhookController) HandleCardUpdated(c *gin.Context) {
 
 	clienteAtualizado, err := wc.Service.ProcessarCardUpdated(input)
 	if err != nil {
+		slog.Error("AUDIT: Erro webhook ja esta cadastrado.",
+			"acao", "PIPEFY_WEBHOOK_PROCESS",
+			"card_id", input.CardID,
+			"status", "erro_conflito",
+			"error", err.Error(),
+		)
 		c.JSON(http.StatusConflict, gin.H{
 			"status":  StatusConflictError,
 			"details": err.Error(),
@@ -80,7 +97,14 @@ func (wc *WebhookController) HandleCardUpdated(c *gin.Context) {
 			{"field_id": "prioridade", "value": []string{clienteAtualizado.Prioridade}},
 		},
 	}
-
+	slog.Info("AUDIT: Webhook do Pipefy processado com sucesso",
+		"acao", "PIPEFY_WEBHOOK_SUCCESS",
+		"card_id", input.CardID,
+		"cliente_email", clienteAtualizado.ClienteEmail,
+		"novo_status", clienteAtualizado.Status,
+		"nova_prioridade", clienteAtualizado.Prioridade,
+		"status", "sucesso",
+	)
 	c.JSON(http.StatusOK, gin.H{
 		"status":  StatusSuccess,
 		"message": "Webhook processado com sucesso e banco local atualizado!",

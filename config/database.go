@@ -3,7 +3,7 @@ package config
 import (
 	"api-financial/models"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -16,7 +16,7 @@ var DB *gorm.DB
 func ConnectDB() *gorm.DB {
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("Erro ao inicializar as configuracoes de ambiente.")
+		slog.Warn("Configurações de ambiente (.env) não encontradas, usando fallbacks.")
 	}
 
 	host := getEnv("DB_HOST", "localhost")
@@ -30,10 +30,10 @@ func ConnectDB() *gorm.DB {
 
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Falha ao conectar ao banco de dado: ", err)
+		slog.Error("Falha critica ao conectar ao banco de dados", "error", err.Error())
 	}
 
-	fmt.Printf("Banco de dados inicializado [%s!\n", dbName)
+	slog.Info("Banco de dados inicializado com sucesso", "database", dbName, "host", host)
 
 	DB = database
 
@@ -42,17 +42,18 @@ func ConnectDB() *gorm.DB {
 }
 
 func RunMigrations() {
-	fmt.Println("Executando AutoMigrate do GORM...")
+	slog.Info("Executando AutoMigrate do GORM...")
 
 	err := DB.AutoMigrate(
 		&models.Cliente{},
 		&models.WebhookEvent{},
 	)
 	if err != nil {
-		log.Fatalf("Erro ao executar a migração do banco: %v", err)
+		slog.Error("Erro ao executar a migracao do banco", "error", err.Error())
+
 	}
 
-	fmt.Println("Migrações de entidades concluídas com sucesso!")
+	slog.Info("Migrações de entidades concluídas com sucesso!")
 }
 
 func getEnv(key, fallback string) string {

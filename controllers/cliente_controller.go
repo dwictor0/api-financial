@@ -4,7 +4,10 @@ import (
 	"api-financial/models"
 	"api-financial/services"
 	"bytes"
+	"fmt"
+	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -66,7 +69,11 @@ func (cc *ClienteController) Create(c *gin.Context) {
 			})
 			return
 		}
-
+		slog.Warn("AUDIT: Falha na validação do payload",
+			"acao", "CRIAR_CLIENTE",
+			"status", "erro_validacao",
+			"error", err.Error(),
+		)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  StatusInvalidJSON,
 			"details": "O corpo da requisição não é um JSON válido.",
@@ -83,11 +90,48 @@ func (cc *ClienteController) Create(c *gin.Context) {
 
 	clienteCriado, err := cc.Service.CriarCliente(cliente)
 	if err != nil {
+		slog.Error("AUDIT: Falha crítica ao salvar cliente",
+			"acao", "CRIAR_CLIENTE",
+			"status", "erro_sistema",
+			"error", err.Error(),
+		)
 		c.JSON(http.StatusConflict, gin.H{
 			"status":  StatusConflictError,
 			"details": err.Error(),
 		})
 		return
+	}
+	slog.Info(
+		"AUDIT: Novo cliente processado",
+		"modulo", "clientes",
+		"acao", "CRIAR_CLIENTE",
+		"cliente_nome", clienteCriado.ClienteNome,
+		"status", "sucesso",
+	)
+	_ = `
+	mutation createCard($pipeId: ID!, $title: String!, $fields: [FieldValueInput]) {
+	  createCard(input: {
+	    pipe_id: $pipeId,
+	    title: $title,
+	    fields_attributes: $fields
+	  }) {
+	    card {
+	      id
+	      title
+	    }
+	  }
+	}
+	`
+
+	pipeId := os.Getenv("PIPEFY_PIPE_ID")
+	_ = map[string]interface{}{
+		"pipeId": pipeId,
+		"title":  clienteCriado.ClienteNome,
+		"fields": []map[string]interface{}{
+			{"field_id": "email_do_cliente", "field_value": []string{clienteCriado.ClienteEmail}},
+			{"field_id": "tipo_de_solicitacao", "field_value": []string{clienteCriado.TipoSolicitacao}},
+			{"field_id": "valor_do_patrimonio", "field_value": []string{fmt.Sprintf("%.2f", clienteCriado.ValorPatrimonio)}},
+		},
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
