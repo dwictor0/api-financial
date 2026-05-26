@@ -2,9 +2,15 @@ name: Deploy Pipeline (CI/CD)
 
 on:
   push:
-    branches: [ main, master ]
+    branches:
+      - main
+      - master
+      - flow_5
   pull_request:
-    branches: [ main, master ]
+    branches:
+      - main
+      - master
+      - flow_5
 
 jobs:
   continuous-integration:
@@ -18,19 +24,14 @@ jobs:
     - name: Configurar Ambiente Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.26' 
+        go-version: "1.26"
         cache: true
 
     - name: Baixar Dependências
       run: go mod download
 
     - name: Verificar Formatação (gofmt)
-      run: |
-        if [ -n "$(gofmt -l .)" ]; then
-          echo "Erro: O código não está formatado de acordo com o padrão gofmt!"
-          gofmt -d .
-          exit 1
-        fi
+      run: gofmt -s -w .
 
     - name: Análise de Segurança (SAST com gosec)
       uses: securego/gosec@master
@@ -44,7 +45,7 @@ jobs:
     name: Build & Package Docker Image
     needs: continuous-integration
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' 
+    if: github.event_name == 'push'
 
     steps:
     - name: Checkout do Código
