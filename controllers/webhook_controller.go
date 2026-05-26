@@ -3,8 +3,8 @@ package controllers
 import (
 	"api-financial/models"
 	"api-financial/services"
-	"log/slog"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
