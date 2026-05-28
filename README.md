@@ -89,8 +89,8 @@ make test
 | Camada | Cobertura |
 |---|---|
 | **Total Global** | 66% |
-| **Models** | 100% |
-| **Webhook Service** | Alto índice |
+| **Model Cliente** | 100% |
+| **Webhook Service** | 81.0% |
 | **Client Service** | 59% |
 
 > **Nota técnica:** A cobertura do Client Service foi mantida neste patamar intencionalmente para isolar a camada de regras de negócio sem introduzir mocks de chamadas de rede adicionais nesta iteração.
@@ -106,9 +106,9 @@ curl -X POST http://localhost:8080/api/clientes \
   -H "Content-Type: application/json" \
   -d '{
     "cliente_nome": "João Silva",
-    "cliente_email": "123.456.789-00",
-    "tipo_solicitacao": "joao.silva@email.com",
-    "valor_patrimonio": 50000.00
+    "cliente_email": "joao.silva@example.com",
+    "tipo_solicitacao": "Atualização cadastral",
+    "valor_patrimonio": 200000.00
   }'
 ```
 
@@ -119,9 +119,9 @@ curl -X POST http://localhost:8080/api/clientes \
   "cliente": {
     "id": 1,
     "cliente_nome": "João Silva",
-    "cliente_email": "joao.silva@email.com",
+    "cliente_email": "joao.silva@example.com",
     "tipo_solicitacao": "Atualização cadastral",
-    "valor_patrimonio": 200000000000000,
+    "valor_patrimonio": 200000.00,
     "status": "aguardando_analise",
     "prioridade": "nao_definida",
     "created_at": "2026-05-28T19:26:39.519513743-03:00",
@@ -255,7 +255,7 @@ Mantém o banco relacional já utilizado localmente, com failover automático, b
 O webhook do Pipefy é enfileirado imediatamente, retornando `200 OK` ao Pipefy sem latência. Um Lambda Worker consome a fila de forma assíncrona, garantindo que falhas temporâneas não percam eventos (dead-letter queue configurada).
 
 **DynamoDB**
-Armazena o log de eventos processados com uma chave de idempotência (`card_id + action + timestamp`), evitando processamento duplicado de webhooks em caso de reenvio pelo Pipefy.
+Armazena o log de eventos processados com uma chave de idempotência (`event_id + action + timestamp`), evitando processamento duplicado de webhooks em caso de reenvio pelo Pipefy.
 
 ### Escalabilidade e resiliência
 
@@ -294,7 +294,7 @@ POST /webhooks/pipefy
 Validação de assinatura (HMAC)
         │
         ▼
-Verificação de duplicidade (idempotência por card_id)
+Verificação de duplicidade (idempotência por event_id)
         │
         ├── Duplicado → 200 OK (ignorado)
         │
@@ -322,7 +322,7 @@ O sistema segue separação clara de responsabilidades em camadas:
 - **Controller:** Recebe a requisição HTTP, valida o payload e delega ao Service.
 - **Service:** Contém toda a lógica de negócio (cálculo de patrimônio, regras de cliente).
 - **Model:** Estruturas de dados relacionais mapeadas para as tabelas do PostgreSQL.
-- **Routes:** 
+- **Routes:** Camada responsável pelo roteamento da API.
 - **Docs:** Especificações OpenAPI geradas pelo Swagger.
   
 - **Webhook Service:** Processa eventos do Pipefy com controle de duplicidade e tratamento assíncrono.
