@@ -51,7 +51,7 @@ func NewClienteController(svc *services.ClienteService) *ClienteController {
 // @Success      201      {object}  map[string]interface{} "Cliente criado com sucesso"
 // @Failure      400      {object}  map[string]interface{} "Validação de formato falhou"
 // @Failure      409      {object}  map[string]interface{} "Conflito de cadastro (E-mail já existente)"
-// @Router       /clientes [post]
+// @Router       /api/clientes [post]
 func (cc *ClienteController) Create(c *gin.Context) {
 	var input models.CriarClienteInput
 
