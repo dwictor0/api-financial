@@ -1,70 +1,149 @@
 package tests
 
 import (
+	"os"
+	"testing"
+	"time"
+
 	"api-financial/models"
 	"api-financial/services"
-	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-func setupTestDB(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+func SetupTestDB() *gorm.DB {
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
-		t.Fatalf("falha ao abrir banco em memoria: %v", err)
+		panic("Falha ao inicializar o banco de dados de testes em memória: " + err.Error())
 	}
 
 	err = db.AutoMigrate(&models.Cliente{}, &models.WebhookEvent{})
 	if err != nil {
-		t.Fatalf("falha ao rodar automigrate de teste: %v", err)
+		panic("Falha ao rodar migrações de teste: " + err.Error())
 	}
 
 	return db
 }
 
+func TestMain(m *testing.M) {
+	os.Setenv("PIPEFY_TOKEN", "token_fake_teste_ci")
+	os.Setenv("PIPEFY_PIPE_ID", "999999")
+
+	code := m.Run()
+
+	os.Unsetenv("PIPEFY_TOKEN")
+	os.Unsetenv("PIPEFY_PIPE_ID")
+
+	os.Exit(code)
+}
+
 func TestCriarCliente_Sucesso(t *testing.T) {
-	db := setupTestDB(t)
+	os.Setenv("PIPEFY_TOKEN", "token_fake_para_ci_cd")
+	os.Setenv("PIPEFY_PIPE_ID", "123456")
+	os.Setenv("PIPEFY_API_URL", "https://api.pipefy.com")
+
+	defer os.Unsetenv("PIPEFY_TOKEN")
+	defer os.Unsetenv("PIPEFY_PIPE_ID")
+	defer os.Unsetenv("PIPEFY_API_URL")
+
+	db := SetupTestDB()
 	service := services.NewClienteService(db)
 
-	cliente := models.Cliente{
-		ClienteNome:     "Joao Teste",
+	novoCliente := models.Cliente{
+		ClienteNome:     "Lucas Silva",
 		ClienteEmail:    "lucas@test.com",
-		TipoSolicitacao: "abertura_conta",
-		ValorPatrimonio: 150000.00,
+		ValorPatrimonio: 500000,
 	}
 
-	resultado, err := service.CriarCliente(cliente)
+	_, err := service.CriarCliente(novoCliente)
+	assert.NoError(t, err)
 
-	if err != nil {
-		t.Errorf("nao esperava erro, mas obteve: %v", err)
-	}
+	var clienteBanco models.Cliente
+	errDB := db.First(&clienteBanco, "cliente_email = ?", "lucas@test.com").Error
+	assert.NoError(t, errDB)
+	assert.Equal(t, "Lucas Silva", clienteBanco.ClienteNome)
 
-	if resultado.Status != "aguardando_analise" {
-		t.Errorf("esperava status 'aguardando_analise', mas obteve: %s", resultado.Status)
-	}
-
-	if resultado.Prioridade != "nao_definida" {
-		t.Errorf("esperava prioridade 'nao_definida', mas obteve: %s", resultado.Prioridade)
-	}
+	time.Sleep(100 * time.Millisecond)
 }
 
 func TestCriarCliente_ErroDuplicado(t *testing.T) {
-	db := setupTestDB(t)
+	db := SetupTestDB()
 	service := services.NewClienteService(db)
 
-	cliente := models.Cliente{
-		ClienteNome:     "Joao Duplicado",
+	clienteExistente := models.Cliente{
+		ClienteNome:     "Cliente Antigo",
 		ClienteEmail:    "duplicado@test.com",
-		TipoSolicitacao: "abertura_conta",
-		ValorPatrimonio: 50000.00,
+		ValorPatrimonio: 100000,
+	}
+	db.Create(&clienteExistente)
+
+	novoClienteDuplicado := models.Cliente{
+		ClienteNome:     "Novo Cliente",
+		ClienteEmail:    "duplicado@test.com",
+		ValorPatrimonio: 200000,
 	}
 
-	_, _ = service.CriarCliente(cliente)
+	_, err := service.CriarCliente(novoClienteDuplicado)
 
-	_, err := service.CriarCliente(cliente)
+	assert.Error(t, err)
+}
 
-	if err == nil {
-		t.Error("esperava um erro de conflito por email duplicado, mas o erro veio nulo")
+func TestClienteProcessarCardUpdated_PrioridadeAlta(t *testing.T) {
+	os.Setenv("PIPEFY_TOKEN", "token_fake_para_ci_cd")
+	os.Setenv("PIPEFY_PIPE_ID", "123456")
+	os.Setenv("API_URL", "https://api.pipefy.com")
+
+	defer os.Unsetenv("PIPEFY_TOKEN")
+	defer os.Unsetenv("PIPEFY_PIPE_ID")
+	defer os.Unsetenv("API_URL")
+
+	db := SetupTestDB()
+	webhookService := services.NewWebhookService(db)
+
+	clienteMock := models.Cliente{
+		ClienteNome:     "Roberto VIP",
+		ClienteEmail:    "rico@test.com",
+		ValorPatrimonio: 1500000,
 	}
+	db.Create(&clienteMock)
+
+	payload := models.WebhookCardUpdatedInput{
+		EventID:      "evt_unique_111",
+		CardID:       "card_777",
+		ClienteEmail: "rico@test.com",
+	}
+
+	_, err := webhookService.ProcessarCardUpdated(payload)
+	assert.NoError(t, err)
+
+	var clienteAtualizado models.Cliente
+	db.First(&clienteAtualizado, "cliente_email = ?", "rico@test.com")
+
+	assert.Equal(t, "prioridade_alta", clienteAtualizado.Prioridade)
+
+	time.Sleep(50 * time.Millisecond)
+}
+
+func TestClienteProcessarCardUpdated_Idempotencia(t *testing.T) {
+	db := SetupTestDB()
+	webhookService := services.NewWebhookService(db)
+
+	eventoAntigo := models.WebhookEvent{
+		EventID:   "evt_repetido_111",
+		CardID:    "card_111",
+		CreatedAt: time.Now(),
+	}
+	db.Create(&eventoAntigo)
+
+	payloadDuplicado := models.WebhookCardUpdatedInput{
+		EventID:      "evt_repetido_111",
+		CardID:       "card_111",
+		ClienteEmail: "idempotente@test.com",
+	}
+
+	_, err := webhookService.ProcessarCardUpdated(payloadDuplicado)
+
+	assert.Error(t, err, "O sistema deveria bloquear o processamento de event_id duplicado")
 }

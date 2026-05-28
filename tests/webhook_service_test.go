@@ -24,7 +24,7 @@ func setupTestWebhookDB(t *testing.T) *gorm.DB {
 }
 
 func TestProcessarCardUpdated_PrioridadeAlta(t *testing.T) {
-	db := setupTestDB(t)
+	db := setupTestWebhookDB(t)
 	webhookService := services.NewWebhookService(db)
 	clienteService := services.NewClienteService(db)
 
@@ -58,7 +58,7 @@ func TestProcessarCardUpdated_PrioridadeAlta(t *testing.T) {
 }
 
 func TestProcessarCardUpdated_Idempotencia(t *testing.T) {
-	db := setupTestDB(t)
+	db := setupTestWebhookDB(t)
 	webhookService := services.NewWebhookService(db)
 	clienteService := services.NewClienteService(db)
 
