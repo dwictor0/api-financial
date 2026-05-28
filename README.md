@@ -2,7 +2,22 @@
 
 > Um sistema interno para gerenciamento de clientes, cálculo de patrimônio investido e mapeamento de fluxos operacionais integrado com a API GraphQL do Pipefy e Webhooks.
 
----
+--- 
+
+## **Sumário**
+
+- [Tecnologias Utilizadas](#tecnologias-utilizadas)
+- [Instalação e Execução Local](#instalação-e-execução-local)
+- [Execução dos Testes](#execução-dos-testes)
+- [Exemplos de Requisição (cURL)](#exemplos-de-requisição-curl)
+- [Guia Passo a Passo: Integração Completa com o Painel do Pipefy](#guia-passo-a-passo-integração-completa-com-o-painel-do-pipefy)
+- [Visão de Produção na AWS](#visão-de-produção-na-aws)
+- [Decisões Arquiteturais](#decisões-arquiteturais)
+- [Fluxo de Processamento de Webhook](#fluxo-de-processamento-de-webhook)
+- [Arquitetura da Aplicação](#arquitetura-da-aplicação)
+- [Troubleshooting](#troubleshooting)
+
+--- 
 
 ## **Tecnologias Utilizadas**
 
@@ -13,6 +28,8 @@
 - [Makefile](https://www.gnu.org/software/make/manual/make.html)
 
 ---
+
+
 
 ## **Instalação e Execução Local**
 
