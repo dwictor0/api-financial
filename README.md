@@ -89,8 +89,8 @@ make test
 | Camada | Cobertura |
 |---|---|
 | **Total Global** | 66% |
-| **Models** | 100% |
-| **Webhook Service** | Alto índice |
+| **Model Cliente** | 100% |
+| **Webhook Service** | 81.0% |
 | **Client Service** | 59% |
 
 > **Nota técnica:** A cobertura do Client Service foi mantida neste patamar intencionalmente para isolar a camada de regras de negócio sem introduzir mocks de chamadas de rede adicionais nesta iteração.
