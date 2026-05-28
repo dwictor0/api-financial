@@ -1,8 +1,10 @@
 export DB_HOST ?= localhost
-export DB_PORT ?= 3306
+export DB_PORT ?= 5432
 export DB_USER ?= root
 export DB_PASSWORD ?= root
 export DB_NAME ?= api_financial_db
+
+export PATH := $(PATH):/usr/local/go/bin
 
 .PHONY: help up down test run dev
 
@@ -29,6 +31,9 @@ test:
 	@echo "================================================================="
 	@echo "  [1/3] Rodando os testes unitarios (limpando cache)..."
 	@echo "================================================================="
+	@if ! command -v go > /dev/null; then \
+		echo "Erro: O compilador do Go nao foi encontrado no PATH. Verifique a instalacao."; exit 1; \
+	fi
 	@go test ./tests -coverpkg=./... -coverprofile=coverage.out -count=1 || (echo "\nOps! Alguns testes falharam. Corrija os erros antes de gerar o HTML." && exit 1)
 	
 	@echo ""
@@ -54,7 +59,12 @@ test:
 
 run:
 	@echo "Iniciando servidor da API Financial..."
-	@go run main.go
+	@if ! command -v go > /dev/null; then \
+		echo "Erro Crítico: O comando 'go' nao esta acessivel neste ambiente (mesmo tentando /usr/local/go/bin)."; \
+		echo "Se voce usou 'sudo make dev', tente rodar apenas 'make dev' sem o sudo."; \
+		exit 1; \
+	fi
+	@go run cmd/api/main.go
 
 dev: up
 	@echo "Aguardando o banco de dados responder na porta $(DB_PORT)..."
