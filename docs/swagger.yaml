@@ -39,12 +39,12 @@ info:
   title: API Financial - MVP
   version: "1.0"
 paths:
-  /clientes:
+  /api/clientes:
     post:
       consumes:
       - application/json
       description: Recebe os dados de um cliente, executa validações de negócio, evita
-        duplicidade de e-mail e prepara o mapeamento para o Pipefy.
+        duplicidade de e-mail e envia para o Pipefy.
       parameters:
       - description: Dados do Cliente
         in: body
@@ -70,20 +70,15 @@ paths:
           schema:
             additionalProperties: true
             type: object
-        "500":
-          description: Erro interno do servidor
-          schema:
-            additionalProperties: true
-            type: object
       summary: Criar um novo cliente
       tags:
       - Clientes
-  /webhooks/pipefy/card-updated:
+  /api/webhooks/pipefy/card-updated:
     post:
       consumes:
       - application/json
       description: Recebe a notificação do Pipefy, valida a idempotência do evento
-        e atualiza a prioridade/status do cliente.
+        e updates a prioridade/status do cliente.
       parameters:
       - description: Payload do Webhook
         in: body

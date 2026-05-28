@@ -29,7 +29,7 @@ func NewWebhookController(svc *services.WebhookService) *WebhookController {
 // @Success      200      {object}  map[string]interface{} "Webhook processado com sucesso"
 // @Failure      400      {object}  map[string]interface{} "JSON inválido ou campos obrigatórios ausentes"
 // @Failure      409      {object}  map[string]interface{} "Conflito: Evento duplicado ou erro de negócio"
-// @Router       /webhooks/pipefy/card-updated [post]
+// @Router       /api/webhooks/pipefy/card-updated [post]
 func (wc *WebhookController) HandleCardUpdated(c *gin.Context) {
 	var input models.WebhookCardUpdatedInput
 

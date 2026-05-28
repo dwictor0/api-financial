@@ -15,9 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/clientes": {
+        "/api/clientes": {
             "post": {
-                "description": "Recebe os dados de um cliente, executa validações de negócio, evita duplicidade de e-mail e prepara o mapeamento para o Pipefy.",
+                "description": "Recebe os dados de um cliente, executa validações de negócio, evita duplicidade de e-mail e envia para o Pipefy.",
                 "consumes": [
                     "application/json"
                 ],
@@ -60,20 +60,13 @@ const docTemplate = `{
                             "type": "object",
                             "additionalProperties": true
                         }
-                    },
-                    "500": {
-                        "description": "Erro interno do servidor",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
                     }
                 }
             }
         },
-        "/webhooks/pipefy/card-updated": {
+        "/api/webhooks/pipefy/card-updated": {
             "post": {
-                "description": "Recebe a notificação do Pipefy, valida a idempotência do evento e atualiza a prioridade/status do cliente.",
+                "description": "Recebe a notificação do Pipefy, valida a idempotência do evento e updates a prioridade/status do cliente.",
                 "consumes": [
                     "application/json"
                 ],
