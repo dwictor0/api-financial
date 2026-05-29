@@ -21,7 +21,7 @@
 
 ## **Tecnologias Utilizadas**
 
-- [Go (Golang)](https://go.dev/)
+- [Go (Golang 1.26.3)](https://go.dev/)
 - [PostgreSQL](https://www.postgresql.org/)
 - [Docker & Docker Compose](https://www.docker.com/)
 - [Swagger (swaggo)](https://github.com/swaggo/swag)
@@ -49,6 +49,7 @@ Copie o arquivo de exemplo e ajuste conforme necessário:
 ```bash
 cp .env.example .env
 ```
+> ⚠️ **Atenção:** 
 
 ### 3. Suba o ambiente completo (Banco + API)
 
