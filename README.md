@@ -137,12 +137,12 @@ curl -X POST http://localhost:8080/api/clientes \
 ### Endpoint 2 — Receber Webhook do Pipefy
 
 ```bash
-curl -X POST http://localhost:8080/api/webhooks/pipefy \
+curl -X POST http://localhost:8080/api/webhooks/pipefy/card-updated \
   -H "Content-Type: application/json" \
   -d '{
     "event_id": "evt_123",
     "card_id": "card_456",
-    "cliente_email": "joao.silva@email.com",
+    "cliente_email": "joao.silva@example.com",
     "timestamp": "2026-05-18T12:00:00Z"
   }'
 ```
