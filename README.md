@@ -296,7 +296,7 @@ Validação de assinatura (HMAC)
         ▼
 Verificação de duplicidade (idempotência por event_id)
         │
-        ├── Duplicado → 200 OK (ignorado)
+        ├── Duplicado → 409 Conflict (ignorado)
         │
         └── Novo evento
                 │
