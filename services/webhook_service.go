@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -98,13 +99,41 @@ func (s *WebhookService) ProcessarCardUpdated(input models.WebhookCardUpdatedInp
 	pipefyToken := os.Getenv("PIPEFY_TOKEN")
 
 	if pipefyToken != "" && pipefyURL != "" {
-		req, _ := http.NewRequest("POST", pipefyURL, bytes.NewBuffer(bodyRequestBody))
+		parsedURL, err := url.ParseRequestURI(pipefyURL)
+		if err != nil {
+			s.Logger.Error("[pipefy-webhook] Formato da PIPEFY_API_URL é inválido",
+				"error", err,
+				"url_fornecida", pipefyURL)
+			return &cliente, nil
+		}
+
+		if parsedURL.Scheme != "https" || parsedURL.Host != "api.pipefy.com" {
+			s.Logger.Error("[pipefy-webhook] Bloqueio Anti-SSRF: Domínio ou protocolo externo não autorizado",
+				"host_bloqueado", parsedURL.Host)
+			return &cliente, nil
+		}
+
+		// #nosec G704 - URL validada de forma estrita contra ataques SSRF acima
+		req, err := http.NewRequest("POST", parsedURL.String(), bytes.NewBuffer(bodyRequestBody))
+		if err != nil {
+			s.Logger.Error("Erro ao construir request HTTP para o Pipefy", "error", err)
+			return &cliente, nil
+		}
+
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", pipefyToken))
 		req.Header.Set("Content-Type", "application/json")
+
 		httpClient := &http.Client{Timeout: 5 * time.Second}
+
+		// #nosec G704 - Chamada segura mitigada via whitelist estrutural de hosts
 		resp, err := httpClient.Do(req)
 		if err == nil {
 			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				s.Logger.Warn("Pipefy retornou status de falha na atualização", "status_code", resp.StatusCode)
+			}
+		} else {
+			s.Logger.Error("Falha física de rede ao conectar com o Pipefy", "error", err)
 		}
 	}
 
