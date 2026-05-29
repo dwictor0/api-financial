@@ -16,9 +16,10 @@ import (
 // @BasePath        /ap1
 func main() {
 	config.InitLogger()
+	logger := slog.Default()
 	db := config.ConnectDB()
 	r := gin.Default()
-	routes.SetupClienteRoutes(r, db)
+	routes.SetupClienteRoutes(r, db, logger)
 	routes.SetupSwaggerRoute(r)
 	routes.SetupWebhookRoutes(r, db)
 	log.Println("Servidor HTTP iniciado na porta :8080")

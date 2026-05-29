@@ -3,6 +3,8 @@ package tests
 import (
 	"api-financial/models"
 	"api-financial/services"
+	"io"
+	"log/slog"
 	"testing"
 
 	"gorm.io/driver/sqlite"
@@ -26,7 +28,9 @@ func setupTestWebhookDB(t *testing.T) *gorm.DB {
 func TestProcessarCardUpdated_PrioridadeAlta(t *testing.T) {
 	db := setupTestWebhookDB(t)
 	webhookService := services.NewWebhookService(db)
-	clienteService := services.NewClienteService(db)
+	testLogger := slog.New(slog.NewTextHandler(io.Discard, nil))
+
+	clienteService := services.NewClienteService(db, testLogger)
 
 	email := "rico@test.com"
 	_, _ = clienteService.CriarCliente(models.Cliente{
@@ -60,7 +64,8 @@ func TestProcessarCardUpdated_PrioridadeAlta(t *testing.T) {
 func TestProcessarCardUpdated_Idempotencia(t *testing.T) {
 	db := setupTestWebhookDB(t)
 	webhookService := services.NewWebhookService(db)
-	clienteService := services.NewClienteService(db)
+	testLogger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	clienteService := services.NewClienteService(db, testLogger)
 
 	email := "idempotente@test.com"
 	_, _ = clienteService.CriarCliente(models.Cliente{
