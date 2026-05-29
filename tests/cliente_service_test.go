@@ -1,6 +1,8 @@
 package tests
 
 import (
+	"io"
+	"log/slog"
 	"os"
 	"testing"
 	"time"
@@ -49,7 +51,8 @@ func TestCriarCliente_Sucesso(t *testing.T) {
 	defer os.Unsetenv("PIPEFY_API_URL")
 
 	db := SetupTestDB()
-	service := services.NewClienteService(db)
+	testLogger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	service := services.NewClienteService(db, testLogger)
 
 	novoCliente := models.Cliente{
 		ClienteNome:     "Lucas Silva",
@@ -70,7 +73,9 @@ func TestCriarCliente_Sucesso(t *testing.T) {
 
 func TestCriarCliente_ErroDuplicado(t *testing.T) {
 	db := SetupTestDB()
-	service := services.NewClienteService(db)
+	testLogger := slog.New(slog.NewTextHandler(io.Discard, nil))
+
+	service := services.NewClienteService(db, testLogger)
 
 	clienteExistente := models.Cliente{
 		ClienteNome:     "Cliente Antigo",
