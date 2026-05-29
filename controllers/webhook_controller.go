@@ -3,7 +3,6 @@ package controllers
 import (
 	"api-financial/models"
 	"api-financial/services"
-	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -34,7 +33,6 @@ func (wc *WebhookController) HandleCardUpdated(c *gin.Context) {
 	var input models.WebhookCardUpdatedInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		fmt.Println("ERRO DE VALIDAÇÃO DO GIN:", err.Error())
 		if errs, ok := err.(validator.ValidationErrors); ok {
 			camposIncompletos := make(map[string]string)
 			for _, e := range errs {
