@@ -1,6 +1,6 @@
 export DB_HOST ?= localhost
 export DB_PORT ?= 5432
-export DB_USER ?= root
+export DB_USER ?= postgres
 export DB_PASSWORD ?= root
 export DB_NAME ?= api_financial_db
 
