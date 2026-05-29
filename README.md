@@ -187,7 +187,7 @@ A API precisa de uma chave de autorização para ter permissão de enviar dados 
 1. No canto inferior esquerdo do Pipefy, clique na sua **foto de perfil** e vá em **Account Preferences** (Configurações da Conta).
 2. No menu esquerdo, clique em **Personal Access Tokens**.
 3. Clique em **Generate new token**, dê um nome para identificar (ex: `API-Financial-Go`) e clique em gerar.
-4. **Copie o token gerado imediatamente** e guarde-o com segurança. Ele deve ser adicionado no arquivo `.env` da sua aplicação na variável correspondente.
+4. **Copie o token gerado imediatamente** e guarde-o com segurança. Ele deve ser adicionado no arquivo `.env` da sua aplicação na variável correspondente **Pipe TOKEN**.
 
 ### 3. Criando a Automação e Configurando o Webhook (Gatilho HTTP)
 Para fazer o Pipefy avisar a sua API em Go quando uma alteração acontecer, configure uma automação de disparo de requisição HTTP:
