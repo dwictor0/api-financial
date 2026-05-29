@@ -28,9 +28,8 @@ func NewClienteService(db *gorm.DB, logger *slog.Logger) *ClienteService {
 
 func (s *ClienteService) CriarCliente(clienteInput models.Cliente) (*models.Cliente, error) {
 	if clienteInput.ClienteEmail == "" {
-		clienteInput.ClienteEmail = fmt.Sprintf("sem-email-%d@sistema.com", time.Now().UnixNano())
-		s.Logger.Info("Cliente criado sem e-mail fornecido. Gerado e-mail temporário.",
-			slog.String("email_gerado", clienteInput.ClienteEmail))
+		s.Logger.Warn("Tentativa de cadastro rejeitada: e-mail do cliente não foi fornecido")
+		return nil, fmt.Errorf("O campo cliente_email é obrigatório")
 	}
 
 	var clienteExistente models.Cliente
