@@ -2,6 +2,13 @@
 
 > Um sistema interno para gerenciamento de clientes, cálculo de patrimônio investido e mapeamento de fluxos operacionais integrado com a API GraphQL do Pipefy e Webhooks.
 
+---
+## **Pré-requisitos**
+Antes de iniciar, certifique-se de ter instalado em sua máquina:
+- **Git**
+- **Docker & Docker Compose**
+- **Go (Golang)** (versão 1.26.3)
+- **Makefile** 
 --- 
 
 ## **Sumário**
