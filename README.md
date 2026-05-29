@@ -324,8 +324,6 @@ O sistema segue separação clara de responsabilidades em camadas:
 - **Model:** Estruturas de dados relacionais mapeadas para as tabelas do PostgreSQL.
 - **Routes:** Camada responsável pelo roteamento da API.
 - **Docs:** Especificações OpenAPI geradas pelo Swagger.
-  
-- **Webhook Service:** Processa eventos do Pipefy com controle de duplicidade e tratamento assíncrono.
 
 ---
 
