@@ -56,7 +56,6 @@ Copie o arquivo de exemplo e ajuste conforme necessário:
 ```bash
 cp .env.example .env
 ```
-> ⚠️ **Atenção:** 
 
 ### 3. Suba o ambiente completo (Banco + API)
 
