@@ -152,7 +152,7 @@ curl -X POST http://localhost:8080/api/webhooks/pipefy/card-updated \
 ```json
 {
   "data": {
-    "cliente_email": "joao.silva@email.com",
+    "cliente_email": "joao.silva@example.com",
     "prioridade": "prioridade_alta",
     "status": "processado"
   },
