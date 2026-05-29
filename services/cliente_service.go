@@ -118,7 +118,7 @@ func (s *ClienteService) CriarCliente(clienteInput models.Cliente) (*models.Clie
 			return
 		}
 
-		req.Header.Set("Authorization", token)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 		req.Header.Set("Content-Type", "application/json")
 
 		client := &http.Client{Timeout: 10 * time.Second}
