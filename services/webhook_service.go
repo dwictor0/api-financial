@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -131,9 +132,8 @@ func (s *WebhookService) ProcessarCardUpdated(input models.WebhookCardUpdatedInp
 		resp, err := httpClient.Do(req)
 		if err == nil {
 			defer resp.Body.Close()
-			if resp.StatusCode != http.StatusOK {
-				s.Logger.Warn("Pipefy retornou status de falha na atualização", "status_code", resp.StatusCode)
-			}
+			bodyBytes, _ := io.ReadAll(resp.Body)
+			slog.Info("[PIPEFY-RESPONSE-DEBUG]", "payload", string(bodyBytes))
 		} else {
 			s.Logger.Error("Falha física de rede ao conectar com o Pipefy", "error", err)
 		}
