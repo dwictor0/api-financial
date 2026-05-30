@@ -32,6 +32,46 @@ func NewWebhookService(db *gorm.DB, logger *slog.Logger) *WebhookService {
 	}
 }
 
+func (s *WebhookService) enviarMutacaoPipefy(httpClient *http.Client, pipefyURL, pipefyToken, cardID, status, prioridade string) error {
+	query := fmt.Sprintf(`mutation UpdateCardFields($cardId: ID!) {
+		status: updateCardField(input: {card_id: $cardId, field_id: "status_do_cliente", new_value: "%s"}) {
+			card { title }
+		}
+		prioridade: updateCardField(input: {card_id: $cardId, field_id: "prioridade", new_value: "%s"}) {
+			card { title }
+		}
+	}`, status, prioridade)
+
+	variables := map[string]interface{}{
+		"cardId": cardID,
+	}
+
+	bodyRequestBody, err := json.Marshal(graphQLRequest{Query: query, Variables: variables})
+	if err != nil {
+		return fmt.Errorf("erro ao serializar payload GraphQL: %w", err)
+	}
+
+	// #nosec G704 - URL validada de forma estrita contra ataques SSRF antes desta chamada
+	req, err := http.NewRequest("POST", pipefyURL, bytes.NewBuffer(bodyRequestBody))
+	if err != nil {
+		return fmt.Errorf("erro ao construir request HTTP para o Pipefy: %w", err)
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", pipefyToken))
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("falha de rede ao conectar com o Pipefy: %w", err)
+	}
+	defer resp.Body.Close()
+
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	slog.Info("[PIPEFY-RESPONSE-DEBUG]", "payload", string(bodyBytes))
+
+	return nil
+}
+
 func (s *WebhookService) ProcessarCardUpdated(input models.WebhookCardUpdatedInput) (*models.Cliente, error) {
 	var eventoExistente models.WebhookEvent
 	if err := s.DB.Where("event_id = ?", input.EventID).First(&eventoExistente).Error; err == nil {
@@ -71,33 +111,6 @@ func (s *WebhookService) ProcessarCardUpdated(input models.WebhookCardUpdatedInp
 		return nil, err
 	}
 
-	mutation := `
-		mutation {
-		updateCardField(input: {
-			card_id: "%s", 
-			containerFields: [
-			{ field_id: "status_do_cliente", value: "%s" },
-			{ field_id: "prioridade", value: "%s" }
-			]
-		}) { clientMutationId }
-		}
-    `
-
-	variables := map[string]interface{}{
-		"cardId": input.CardID,
-		"containerFields": []map[string]interface{}{
-			{
-				"field_id": "status_do_cliente",
-				"value":    cliente.Status,
-			},
-			{
-				"field_id": "prioridade",
-				"value":    cliente.Prioridade,
-			},
-		},
-	}
-
-	bodyRequestBody, _ := json.Marshal(graphQLRequest{Query: mutation, Variables: variables})
 	pipefyURL := os.Getenv("PIPEFY_API_URL")
 	pipefyToken := os.Getenv("PIPEFY_TOKEN")
 
@@ -116,26 +129,10 @@ func (s *WebhookService) ProcessarCardUpdated(input models.WebhookCardUpdatedInp
 			return &cliente, nil
 		}
 
-		// #nosec G704 - URL validada de forma estrita contra ataques SSRF acima
-		req, err := http.NewRequest("POST", parsedURL.String(), bytes.NewBuffer(bodyRequestBody))
-		if err != nil {
-			s.Logger.Error("Erro ao construir request HTTP para o Pipefy", "error", err)
-			return &cliente, nil
-		}
-
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", pipefyToken))
-		req.Header.Set("Content-Type", "application/json")
-
 		httpClient := &http.Client{Timeout: 5 * time.Second}
 
-		// #nosec G704 - Chamada segura mitigada via whitelist estrutural de hosts
-		resp, err := httpClient.Do(req)
-		if err == nil {
-			defer resp.Body.Close()
-			bodyBytes, _ := io.ReadAll(resp.Body)
-			slog.Info("[PIPEFY-RESPONSE-DEBUG]", "payload", string(bodyBytes))
-		} else {
-			s.Logger.Error("Falha física de rede ao conectar com o Pipefy", "error", err)
+		if err := s.enviarMutacaoPipefy(httpClient, parsedURL.String(), pipefyToken, input.CardID, cliente.Status, cliente.Prioridade); err != nil {
+			s.Logger.Error("Erro ao atualizar campos no Pipefy", "error", err)
 		}
 	}
 
