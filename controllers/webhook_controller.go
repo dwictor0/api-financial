@@ -64,12 +64,6 @@ func (wc *WebhookController) HandleCardUpdated(c *gin.Context) {
 
 	clienteAtualizado, err := wc.Service.ProcessarCardUpdated(input)
 	if err != nil {
-		slog.Error("AUDIT: Erro webhook ja esta cadastrado.",
-			"acao", "PIPEFY_WEBHOOK_PROCESS",
-			"card_id", input.CardID,
-			"status", "erro_conflito",
-			"error", err.Error(),
-		)
 		c.JSON(http.StatusConflict, gin.H{
 			"status":  StatusConflictError,
 			"details": err.Error(),
@@ -77,32 +71,6 @@ func (wc *WebhookController) HandleCardUpdated(c *gin.Context) {
 		return
 	}
 
-	_ = `
-    mutation updateCardField($cardId: ID!, $fieldId: ID!, $value: [String]!) {
-      updateCardFieldValue(input: {
-        card_id: $cardId,
-        field_id: $fieldId,
-        value: $value
-      }) {
-        card { id }
-      }
-    }
-    `
-	_ = map[string]interface{}{
-		"cardId": input.CardID,
-		"updates": []map[string]interface{}{
-			{"field_id": "status_do_cliente", "value": []string{clienteAtualizado.Status}},
-			{"field_id": "prioridade", "value": []string{clienteAtualizado.Prioridade}},
-		},
-	}
-	slog.Info("AUDIT: Webhook do Pipefy processado com sucesso",
-		"acao", "PIPEFY_WEBHOOK_SUCCESS",
-		"card_id", input.CardID,
-		"cliente_email", clienteAtualizado.ClienteEmail,
-		"novo_status", clienteAtualizado.Status,
-		"nova_prioridade", clienteAtualizado.Prioridade,
-		"status", "sucesso",
-	)
 	c.JSON(http.StatusOK, gin.H{
 		"status":  StatusSuccess,
 		"message": "Webhook processado com sucesso e banco local atualizado!",

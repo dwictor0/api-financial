@@ -21,7 +21,7 @@ func main() {
 	r := gin.Default()
 	routes.SetupClienteRoutes(r, db, logger)
 	routes.SetupSwaggerRoute(r)
-	routes.SetupWebhookRoutes(r, db)
+	routes.SetupWebhookRoutes(r, db, logger)
 	log.Println("Servidor HTTP iniciado na porta :8080")
 
 	if err := r.Run(":8080"); err != nil {
