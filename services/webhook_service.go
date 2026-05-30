@@ -60,6 +60,7 @@ func (s *WebhookService) enviarMutacaoPipefy(httpClient *http.Client, pipefyURL,
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", pipefyToken))
 	req.Header.Set("Content-Type", "application/json")
 
+	// #nosec G704 - host validado via whitelist estrita (api.pipefy.com + https) antes desta chamada
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("falha de rede ao conectar com o Pipefy: %w", err)
