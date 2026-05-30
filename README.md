@@ -206,7 +206,8 @@ Para que a integração via GraphQL consiga preencher e persistir os dados sem e
 2. Clique em **Create new field** (Criar campo) e selecione o tipo **Short Text** (Texto Curto) ou **Email**.
 3. No nome do campo (Label), digite **exatamente**: `email_cliente`
 4. No campo identificador interno do Pipefy (ID do campo/API Key do campo), certifique-se de que ele foi gerado exatamente como `email_cliente`.
-> ⚠️ **Atenção:** A nomenclatura `email_cliente` deve ser seguida de forma estrita e sem variações de maiúsculas ou espaços. Caso o ID do campo seja diferente, a camada de serviço da API em Go falhará ao tentar localizar a sintaxe do tipo da *mutation* na documentação oficial, impedindo a sincronização dos dados no banco PostgreSQL local.
+5. Faça o mesmo procedimento, criando campos do tipo texto para os campos **status_do_cliente** e **prioridade**.
+> ⚠️ **Atenção:** As nomenclatura `email_cliente,status_do_cliente, prioridade` deve ser seguida de forma estrita e sem variações de maiúsculas ou espaços. Caso o ID do campo seja diferente, a camada de serviço da API em Go falhará ao tentar localizar a sintaxe do tipo da *mutation* na documentação oficial, impedindo a sincronização dos dados no banco PostgreSQL local.
 
 ### 5. Exemplo de Request Body
 <img width="1400" height="760" alt="image" src="https://github.com/user-attachments/assets/dd7d1d6b-f73a-4545-9a9a-85408b559de1" />
