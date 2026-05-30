@@ -71,14 +71,16 @@ func (s *WebhookService) ProcessarCardUpdated(input models.WebhookCardUpdatedInp
 	}
 
 	mutation := `
-    mutation UpdateFinancialCardFields($cardId: ID!, $containerFields: [UpdateCardFieldInput!]!) {
-      updateCardFields(input: {
-        card_id: $cardId,
-        fields: $containerFields
-      }) {
-        card { id }
-      }
-    }`
+		mutation {
+		updateCardField(input: {
+			card_id: "%s", 
+			containerFields: [
+			{ field_id: "status_do_cliente", value: "%s" },
+			{ field_id: "prioridade", value: "%s" }
+			]
+		}) { clientMutationId }
+		}
+    `
 
 	variables := map[string]interface{}{
 		"cardId": input.CardID,
