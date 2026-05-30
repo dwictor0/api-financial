@@ -85,11 +85,11 @@ func (s *WebhookService) ProcessarCardUpdated(input models.WebhookCardUpdatedInp
 		"containerFields": []map[string]interface{}{
 			{
 				"field_id": "status_do_cliente",
-				"value":    []string{cliente.Status},
+				"value":    cliente.Status,
 			},
 			{
 				"field_id": "prioridade",
-				"value":    []string{cliente.Prioridade},
+				"value":    cliente.Prioridade,
 			},
 		},
 	}
